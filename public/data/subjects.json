@@ -1,0 +1,40 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2023-06-15",
+  "subjects": [
+    {
+      "code": "social",
+      "name": "社会",
+      "icon": "social_icon.webp",
+      "color": "#4B89DC",
+      "topics": [
+        {
+          "code": "industry",
+          "name": "水産業・資源・工業",
+          "icon": "industry_icon.webp",
+          "dataFile": "social_industry.json",
+          "questionCount": 80,
+          "difficulty": "初級〜中級",
+          "targetAge": 10
+        }
+      ]
+    },
+    {
+      "code": "science",
+      "name": "理科",
+      "icon": "science_icon.webp",
+      "color": "#2ECC71",
+      "topics": [
+        {
+          "code": "plants",
+          "name": "植物",
+          "icon": "plants_icon.webp",
+          "dataFile": "science_plants.json",
+          "questionCount": 40,
+          "difficulty": "初級",
+          "targetAge": 9
+        }
+      ]
+    }
+  ]
+}
