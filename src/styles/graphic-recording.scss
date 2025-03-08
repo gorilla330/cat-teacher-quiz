@@ -1,0 +1,211 @@
+@import './variables.scss';
+
+// グラフィックレコーディング風スタイル
+
+// 手描き風の見出し
+@mixin hand-drawn-title {
+  font-family: $font-title;
+  position: relative;
+  display: inline-block;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: $accent1;
+    border-radius: 2px;
+    transform: rotate(-0.5deg);
+  }
+}
+
+// 手描き風のカード/フレーム
+@mixin hand-drawn-card {
+  position: relative;
+  background-color: white;
+  border: 2px solid $primary;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow-md;
+  padding: $spacing-lg;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border: 2px dashed rgba($primary, 0.3);
+    border-radius: $border-radius-xl;
+    z-index: -1;
+    transform: rotate(-0.5deg);
+  }
+}
+
+// 手描き風のボタン
+@mixin hand-drawn-button {
+  font-family: $font-handwritten;
+  background-color: $accent2;
+  color: $primary;
+  border: 2px solid $primary;
+  border-radius: $border-radius-md;
+  padding: $spacing-sm $spacing-lg;
+  position: relative;
+  transition: transform $transition-speed $transition-function;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 100%);
+  }
+  
+  &:hover {
+    transform: translateY(-3px) rotate(-1deg);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+// マーカーハイライト
+@mixin marker-highlight($color: $accent1) {
+  position: relative;
+  display: inline;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0.5em;
+    background-color: rgba($color, 0.4);
+    z-index: -1;
+    transform: rotate(-1deg) translateY(0.1em);
+  }
+}
+
+// 吹き出し
+@mixin speech-bubble($color: white, $border-color: $primary) {
+  position: relative;
+  background-color: $color;
+  border: 2px solid $border-color;
+  border-radius: $border-radius-lg;
+  padding: $spacing-md;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: $color;
+    border-right: 2px solid $border-color;
+    border-bottom: 2px solid $border-color;
+    transform: rotate(45deg);
+  }
+  
+  // 下向き吹き出し（デフォルト）
+  &.bubble-bottom::before {
+    top: -10px;
+    left: 20px;
+    border-right: none;
+    border-bottom: none;
+    border-top: 2px solid $border-color;
+    border-left: 2px solid $border-color;
+  }
+  
+  // 上向き吹き出し
+  &.bubble-top::before {
+    bottom: -10px;
+    left: 20px;
+  }
+  
+  // 左向き吹き出し
+  &.bubble-left::before {
+    top: 20px;
+    right: -10px;
+    transform: rotate(-45deg);
+  }
+  
+  // 右向き吹き出し
+  &.bubble-right::before {
+    top: 20px;
+    left: -10px;
+    border-right: none;
+    border-bottom: none;
+    border-top: 2px solid $border-color;
+    border-left: 2px solid $border-color;
+    transform: rotate(-45deg);
+  }
+}
+
+// 手描き風のアイコン枠
+@mixin hand-drawn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  background-color: white;
+  border: 2px solid $primary;
+  border-radius: $border-radius-circle;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 1px dashed rgba($primary, 0.3);
+    border-radius: $border-radius-circle;
+    z-index: 1;
+  }
+}
+
+// グローバルスタイル
+.gr-title {
+  @include hand-drawn-title;
+}
+
+.gr-card {
+  @include hand-drawn-card;
+}
+
+.gr-button {
+  @include hand-drawn-button;
+}
+
+.gr-highlight {
+  @include marker-highlight;
+  
+  &.highlight-yellow {
+    @include marker-highlight($accent1);
+  }
+  
+  &.highlight-orange {
+    @include marker-highlight($accent2);
+  }
+  
+  &.highlight-red {
+    @include marker-highlight($accent4);
+  }
+}
+
+.gr-bubble {
+  @include speech-bubble;
+}
+
+.gr-icon {
+  @include hand-drawn-icon;
+}
