@@ -153,12 +153,49 @@ export default {
       return isCorrect.value ? 'accent2' : 'accent4';
     });
 
+    // クイズモードを確認
+    const quizMode = ref(route.query.mode || 'normal');
+    const retryQuestionId = ref(route.query.questionId || null);
+    const retryQuestionIds = ref([]);
+    const isFrequentMistakesMode = ref(route.query.frequentOnly === 'true');
+    
+    // 複数の問題に挑戦する場合、問題 ID リストを取得
+    if (quizMode.value === 'retryMultiple' && route.query.questionIds) {
+      try {
+        retryQuestionIds.value = JSON.parse(route.query.questionIds);
+        console.log('複数問題再挑戦モード:', {
+          問題数: retryQuestionIds.value.length,
+          よく間違える問題モード: isFrequentMistakesMode.value
+        });
+      } catch (err) {
+        console.error('問題 ID リストの解析エラー:', err);
+      }
+    }
+    
     // マウント時にデータを読み込む
     onMounted(async () => {
       try {
-        // クイズ開始時に結果を初期化
-        localStorage.removeItem('quizResults');
-        console.log('クイズ結果を初期化しました');
+        // クイズ開始時に結果を完全に初期化
+        const initialQuizResults = {
+          correctCount: 0,
+          totalQuestions: 0,
+          incorrectIds: [],
+          subjectCode: route.params.subjectCode,
+          topicCode: route.params.topicCode
+        };
+        localStorage.setItem('quizResults', JSON.stringify(initialQuizResults));
+        console.log('クイズ結果を初期化しました:', initialQuizResults);
+        
+        // 再挑戦モードの場合はキャラクターメッセージを変更
+        if (quizMode.value === 'retry') {
+          characterMessage.value = '間違えた問題に再挑戦してみよう！';
+        } else if (quizMode.value === 'retryMultiple') {
+          if (isFrequentMistakesMode.value) {
+            characterMessage.value = 'よく間違える問題に挑戦してみよう！克服できるかにゃ？';
+          } else {
+            characterMessage.value = '間違えた問題に挑戦してみよう！今度はできるかにゃ？';
+          }
+        }
         
         // 科目データを読み込む
         if (!subjects.value.length) {
@@ -181,8 +218,42 @@ export default {
         
         questions.value = problemsData;
         
-        // 問題をランダムに並び替え（オプション）
-        questions.value = shuffleArray([...questions.value]);
+        // 再挑戦モードの場合の処理
+        if (quizMode.value === 'retry' && retryQuestionId.value) {
+          // 単一問題再挑戦モード
+          const targetQuestion = questions.value.find(q => q.id === retryQuestionId.value);
+          if (targetQuestion) {
+            questions.value = [targetQuestion]; // 特定の問題だけを設定
+            console.log('再挑戦モード: 問題 ID', retryQuestionId.value);
+          } else {
+            console.error('指定された問題 ID が見つかりません:', retryQuestionId.value);
+          }
+        } else if (quizMode.value === 'retryMultiple' && retryQuestionIds.value.length > 0) {
+          // 複数問題再挑戦モード
+          const targetQuestions = [];
+          
+          // 指定された問題 ID に一致する問題を取得
+          for (const id of retryQuestionIds.value) {
+            const question = questions.value.find(q => q.id === id);
+            if (question) {
+              targetQuestions.push(question);
+            }
+          }
+          
+          if (targetQuestions.length > 0) {
+            questions.value = targetQuestions; // 対象の問題だけを設定
+            questions.value = shuffleArray([...questions.value]); // 問題をシャッフル
+            console.log('複数問題再挑戦モード: 読み込み完了', {
+              読み込み成功数: targetQuestions.length,
+              対象問題数: retryQuestionIds.value.length
+            });
+          } else {
+            console.error('指定された問題が見つかりません');
+          }
+        } else {
+          // 通常モードの場合はランダムに並び替え
+          questions.value = shuffleArray([...questions.value]);
+        }
         
       } catch (err) {
         console.error('問題データの読み込み中にエラーが発生しました:', err);
@@ -206,23 +277,46 @@ export default {
       isCorrect.value = index === currentQuestion.value.correctAnswer;
       
       // 正答数と間違えた問題を記録
-      const quizResults = JSON.parse(localStorage.getItem('quizResults')) || { 
-        correctCount: 0, 
-        totalQuestions: 0, 
-        incorrectIds: [],
-        subjectCode: route.params.subjectCode,
-        topicCode: route.params.topicCode
-      };
+      const quizResults = JSON.parse(localStorage.getItem('quizResults'));
+      
+      // 正解か不正解かに応じてカウントを更新
       
       if (isCorrect.value) {
         quizResults.correctCount += 1; // 正解数をカウント
       } else {
         // 間違えた問題のIDを記録
         const incorrectId = currentQuestion.value.id;
+        // 重複を確実に防ぐために配列に存在しない場合のみ追加
         if (!quizResults.incorrectIds.includes(incorrectId)) {
           quizResults.incorrectIds.push(incorrectId);
+          
+          // デバッグ用に問題データをログ出力
+          console.log('間違えた問題データ:', {
+            id: currentQuestion.value.id,
+            question: currentQuestion.value.question,
+            explanation: currentQuestion.value.explanation
+          });
+          
+          // 間違えた問題のデータをストアに保存（解説を含む）
+          store.commit('addMistake', {
+            questionId: currentQuestion.value.id,
+            subject: route.params.subjectCode,
+            topic: route.params.topicCode,
+            question: currentQuestion.value.question,
+            options: currentQuestion.value.options,
+            correctAnswer: currentQuestion.value.correctAnswer,
+            explanation: currentQuestion.value.explanation
+          });
         }
       }
+      
+      // デバッグ用に詳細ログ出力
+      console.log('回答後の状態:', {
+        問題番号: currentQuestionIndex.value + 1,
+        正解: isCorrect.value,
+        正答数: quizResults.correctCount,
+        不正解問題数: quizResults.incorrectIds.length
+      });
       
       // 必ず科目とトピックコードを記録
       quizResults.subjectCode = route.params.subjectCode;
@@ -252,16 +346,17 @@ export default {
 
       if (isLastQuestion.value) {
         // 結果を保存して結果画面へ遷移
-        const quizResults = JSON.parse(localStorage.getItem('quizResults')) || { 
-          correctCount: 0, 
-          totalQuestions: 0, 
-          incorrectIds: [],
-          subjectCode: route.params.subjectCode,
-          topicCode: route.params.topicCode
-        };
+        const quizResults = JSON.parse(localStorage.getItem('quizResults'));
         
-        // 実際の問題数を正しく記録（ここでのみ問題数を設定）
+        // 実際の問題数を正しく記録
         quizResults.totalQuestions = questions.value.length;
+
+        // 間違えた問題の数を問題数から得た正解数を引いた値に修正
+        const incorrectCount = quizResults.incorrectIds.length;
+        
+        // 正確な表示のため正答数を再計算
+        // 正答数 = 全問題数 - 不正解数
+        quizResults.correctCount = quizResults.totalQuestions - incorrectCount;
         
         // 科目とトピックコードを確実に記録
         quizResults.subjectCode = route.params.subjectCode;
@@ -269,10 +364,14 @@ export default {
         
         // デバッグ用に詳細ログ出力
         console.log('クイズ結果を保存して結果画面へ遷移');
-        console.log('クイズ結果最終:', quizResults);
-        console.log('問題数:', questions.value.length);
-        console.log('正答数:', quizResults.correctCount);
-        console.log('間違えた問題:', quizResults.incorrectIds);
+        console.log('クイズ結果最終:', {
+          総問題数: quizResults.totalQuestions,
+          正答数: quizResults.correctCount,
+          不正解数: incorrectCount,
+          正答率: Math.round((quizResults.correctCount / quizResults.totalQuestions) * 100) + '%',
+          間違えた問題数: quizResults.incorrectIds.length,
+          間違えた問題IDs: quizResults.incorrectIds
+        });
         
         localStorage.setItem('quizResults', JSON.stringify(quizResults));
         
@@ -380,6 +479,10 @@ export default {
       feedbackCardElevation,
       feedbackCardBorder,
       characterBubbleColor,
+      quizMode,
+      retryQuestionId,
+      retryQuestionIds,
+      isFrequentMistakesMode,
       selectAnswer,
       nextQuestion,
       getChoiceVariant,

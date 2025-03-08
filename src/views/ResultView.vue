@@ -14,7 +14,7 @@
         <!-- 間違えた問題の通知 -->
         <div v-if="incorrectIds.length > 0" class="mistake-info">
           <GrCard elevation="sm" border="warning" class="mistake-card">
-            <p>あなたは {{ incorrectIds.length }} 問の問題に間違えました。</p>
+            <p>あなたは {{ totalQuestions - correctCount }} 問の問題に間違えました。</p>
             <p v-if="hasFrequentMistakes" class="frequent-mistake-warning">
               <span class="warning-icon">⚠️</span> よく間違える問題があります！
             </p>

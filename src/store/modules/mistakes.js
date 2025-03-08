@@ -63,7 +63,7 @@ const mutations = {
    * @param {Object} state ストアの状態
    * @param {Object} payload 間違えた問題のデータ
    */
-  addMistake(state, { questionId, subject, topic, question, choices, correctAnswer }) {
+  addMistake(state, { questionId, subject, topic, question, options, correctAnswer, explanation }) {
     // 既存の間違い記録を検索
     const existingIndex = state.mistakesList.findIndex(item => item.questionId === questionId);
     
@@ -83,8 +83,9 @@ const mutations = {
         subject,
         topic,
         question,
-        choices,
+        options,
         correctAnswer,
+        explanation,
         count: 1,
         lastMistaken: new Date().toISOString(),
         clearableAt: getNextSundayAt18().toISOString(),

@@ -49,9 +49,28 @@
       
       <!-- 問題リスト -->
       <div class="mistakes-content" v-if="selectedSubject && filteredMistakes.length > 0">
-        <!-- すべてクリアボタン -->
-        <div class="mistake-actions" v-if="hasClearableMistakes">
+        <!-- アクションボタンエリア -->
+        <div class="mistake-actions-area">
+          <!-- 一括挑戦ボタン -->
           <GrButton
+            variant="primary"
+            @click="retryAllMistakes(false)"
+          >
+            すべての問題に挑戦
+          </GrButton>
+          
+          <!-- よく間違える問題に挑戦ボタン -->
+          <GrButton
+            v-if="hasFrequentMistakes"
+            variant="accent4"
+            @click="retryAllMistakes(true)"
+          >
+            よく間違える問題に挑戦
+          </GrButton>
+          
+          <!-- すべてクリアボタン -->
+          <GrButton
+            v-if="hasClearableMistakes"
             variant="warning"
             @click="showClearAllConfirmation = true"
           >
@@ -75,7 +94,15 @@
                   title="よく間違える問題"
                 >★ よく間違える問題</span>
               </div>
-              <div class="mistake-actions" v-if="mistake.isClearable">
+              <div class="mistake-actions">
+                <GrButton
+                  variant="primary"
+                  size="sm"
+                  class="retry-button"
+                  @click="retryQuestion(mistake)"
+                >
+                  再挑戦
+                </GrButton>
                 <GrButton
                   variant="warning"
                   size="sm"
@@ -90,27 +117,36 @@
               <GrHighlight>{{ mistake.question }}</GrHighlight>
             </div>
             
-            <div class="mistake-choices">
-              <div
-                v-for="(choice, index) in mistake.choices"
-                :key="index"
-                class="mistake-choice"
-                :class="{ 'correct-answer': index === mistake.correctAnswer }"
-              >
-                <span class="choice-number">{{ ['A', 'B', 'C', 'D'][index] }}.</span>
-                <span class="choice-text">{{ choice }}</span>
-                <span
-                  v-if="index === mistake.correctAnswer"
-                  class="correct-marker"
-                >✓</span>
+            <!-- 解説セクション -->
+            <div class="mistake-explanation">
+              <!-- 解説セクション - データ取得中はローディング表示 -->
+              <div class="explanation-section" v-if="isExplanationLoading(mistake)">
+                <h4 class="explanation-title">解説を読み込み中...</h4>
+                <p class="explanation-loading">お待ちください</p>
+              </div>
+              
+              <!-- 解説が見つからない場合 -->
+              <div class="explanation-section" v-else-if="!isExplanationLoading(mistake) && getExplanation(mistake) === null">
+                <h4 class="explanation-title">解説が見つかりません</h4>
+                <p class="explanation-debug">利用可能なデータキー: {{ Object.keys(mistake).join(', ') }}</p>
+              </div>
+              
+              <!-- 解説データがあれば表示 -->
+              <div class="explanation-section" v-else-if="getExplanation(mistake)">
+                <h4 class="explanation-title">解説</h4>
+                <p class="explanation-text">{{ getExplanation(mistake) }}</p>
+              </div>
+              
+              <!-- 解説が見つからない場合のデバッグ情報 -->
+              <div v-else class="explanation-section debug-section">
+                <h4 class="explanation-title">解説が見つかりません</h4>
+                <p class="explanation-debug">
+                  利用可能なデータキー: {{ Object.keys(mistake).join(', ') }}
+                </p>
               </div>
             </div>
             
-            <div class="mistake-lock-info" v-if="!mistake.isClearable">
-              <div class="lock-message">
-                {{ getLockedMessage(mistake) }}
-              </div>
-            </div>
+
           </GrCard>
         </div>
       </div>
@@ -173,6 +209,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
+import DataManager from '@/services/DataManager';
 import GrTitle from '@/components/ui/GrTitle.vue';
 import GrButton from '@/components/ui/GrButton.vue';
 import GrCard from '@/components/ui/GrCard.vue';
@@ -230,10 +267,29 @@ export default {
       return store.getters['mistakes/frequentMistakesBySubject'];
     });
     
+    // よく間違える問題があるかどうか
+    const hasFrequentMistakes = computed(() => {
+      return filteredMistakes.value.some(mistake => mistake.count >= 2);
+    });
+    
     // フィルタリングされた間違い一覧
     const filteredMistakes = computed(() => {
       if (!selectedSubject.value) return [];
-      return store.getters['mistakes/mistakesListBySubject'](selectedSubject.value);
+      const mistakes = store.getters['mistakes/mistakesListBySubject'](selectedSubject.value);
+      
+      // デバッグ用に間違いデータの内容を確認
+      console.log('間違い一覧データ:', mistakes);
+      if (mistakes.length > 0) {
+        console.log('最初の間違いデータサンプル:', {
+          問題ID: mistakes[0].questionId,
+          問題文: mistakes[0].question,
+          正解選択肢: mistakes[0].correctAnswer,
+          解説: mistakes[0].explanation,
+          データキー: Object.keys(mistakes[0])
+        });
+      }
+      
+      return mistakes;
     });
     
     // クリア可能な間違いがあるかどうか
@@ -291,16 +347,209 @@ export default {
       router.push({ name: 'home' });
     };
     
+    // 間違えた問題に再挑戦する
+    const retryQuestion = (mistake) => {
+      // 間違えた問題のIDと科目、トピックを取得
+      const questionId = mistake.questionId;
+      const subjectCode = mistake.subject; // mistake.subjectCodeではなくmistake.subjectを使用
+      const topicCode = mistake.topic; // mistake.topicCodeではなくmistake.topicを使用
+      
+      console.log('再挑戦する問題の情報:', {
+        問題ID: questionId,
+        科目コード: subjectCode,
+        トピックコード: topicCode
+      });
+      
+      // 科目コードとトピックコードが正しく取得できているか確認
+      if (!subjectCode || !topicCode) {
+        console.error('科目コードまたはトピックコードが見つかりません', mistake);
+        return;
+      }
+      
+      // 専用のクイズモードを作成（1問だけのクイズ）
+      const quizParams = {
+        mode: 'retry',
+        questionId
+      };
+      
+      // クイズページに遷移
+      router.push({
+        name: 'quiz',
+        params: {
+          subjectCode,
+          topicCode
+        },
+        query: quizParams
+      });
+    };
+    
+    // すべての間違えた問題またはよく間違える問題に挑戦する
+    const retryAllMistakes = (frequentOnly = false) => {
+      if (!selectedSubject.value || filteredMistakes.value.length === 0) return;
+      
+      // 対象となる問題をフィルタリング
+      let targetMistakes = [...filteredMistakes.value];
+      if (frequentOnly) {
+        // よく間違える問題（count >= 2）のみにフィルタリング
+        targetMistakes = targetMistakes.filter(mistake => mistake.count >= 2);
+      }
+      
+      if (targetMistakes.length === 0) {
+        console.warn('対象となる問題がありません');
+        return;
+      }
+      
+      // 問題のIDリストを作成
+      const questionIds = targetMistakes.map(mistake => mistake.questionId);
+      
+      // 選択された科目を使用
+      const subjectCode = selectedSubject.value;
+      
+      // 各問題のトピックコードを取得 (mistakeにはtopicプロパティとして保存されている)
+      const uniqueTopicCodes = [...new Set(targetMistakes.map(mistake => mistake.topic))];
+      
+      // トピックコードの選択 - 共通のコードがあれば使用、なければ最初の問題のコードを使用
+      const topicCode = uniqueTopicCodes.length === 1 ? uniqueTopicCodes[0] : targetMistakes[0].topic;
+      
+      // 問題が複数のトピックにまたがる場合のログ
+      if (uniqueTopicCodes.length > 1) {
+        console.log('複数のトピックにまたがる問題があります:', uniqueTopicCodes);
+      }
+      
+      console.log('再挑戦パラメータ確認:', {
+        科目コード: subjectCode,
+        トピックコード: topicCode,
+        問題数: questionIds.length,
+        対象トピック数: uniqueTopicCodes.length,
+        よく間違えるモード: frequentOnly
+      });
+      
+      // 科目コードとトピックコードが存在するか確認
+      if (!subjectCode || !topicCode) {
+        console.error('科目またはトピックが正しく取得できませんでした');
+        return;
+      }
+      
+      // クイズパラメータを作成
+      const quizParams = {
+        mode: 'retryMultiple',
+        questionIds: JSON.stringify(questionIds),
+        frequentOnly: frequentOnly ? 'true' : 'false'
+      };
+      
+      // 間違えた問題のクイズページに遷移
+      // トピックコードは必須パラメータであるため、確実に渡す
+      try {
+        router.push({
+          name: 'quiz',
+          params: {
+            subjectCode,
+            topicCode
+          },
+          query: quizParams
+        });
+        
+        console.log('クイズに遷移します:', {
+          科目: subjectCode,
+          トピック: topicCode,
+          問題数: questionIds.length,
+          モード: frequentOnly ? 'よく間違える問題' : 'すべての間違えた問題'
+        });
+      } catch (error) {
+        console.error('クイズページへの遷移中にエラーが発生しました:', error);
+      }
+    };
+    
     // コンポーネントマウント時の処理
     onMounted(() => {
       // クリア可能状態を更新
       store.commit('mistakes/updateClearableStatus');
       loadSubjects();
+      
+      // 全ての間違いに対して解説データを取得
+      filteredMistakes.value.forEach(mistake => {
+        fetchExplanation(mistake);
+      });
     });
+    
+    // DataManagerインスタンスを作成
+    const dataManager = new DataManager();
+    
+    // 解説データを保持するリアクティブなオブジェクト
+    const explanations = ref({});
+    const explanationLoading = ref({});
+    
+    // ローディング状態を確認するヘルパーメソッド
+    const isExplanationLoading = (mistake) => {
+      return mistake && mistake.questionId && explanationLoading.value[mistake.questionId] === true;
+    };
+    
+    // データファイルから解説を非同期で取得するメソッド
+    const fetchExplanation = async (mistake) => {
+      const mistakeId = mistake.questionId;
+      
+      // 既に取得済みまたは取得中なら何もしない
+      if (explanations.value[mistakeId] !== undefined || explanationLoading.value[mistakeId]) {
+        return;
+      }
+
+      // ローディング状態をセット
+      explanationLoading.value[mistakeId] = true;
+
+      try {
+        // まずはローカルのデータから確認
+        if (mistake.explanation) {
+          explanations.value[mistakeId] = mistake.explanation;
+          return;
+        }
+
+        // 問題データファイルから取得してみる
+        if (mistake.subject && mistake.topic && mistake.questionId) {
+          try {
+            // データファイル名を形式に合わせて生成 (`public/data/{subject}_{topic}.json`)
+            const fileName = `${mistake.subject}_${mistake.topic}.json`;
+
+            // データファイルからデータを取得
+            const problemsData = await dataManager.loadProblemFile(fileName);
+            if (problemsData && problemsData.questions) {
+              // 問題データを找す
+              const question = problemsData.questions.find(q => q.id === mistake.questionId);
+              if (question && question.explanation) {
+                explanations.value[mistakeId] = question.explanation;
+                return;
+              }
+            }
+          } catch (e) {
+            console.error('データ取得エラー:', e);
+          }
+        }
+
+        // 解説が見つからない場合は空に設定
+        explanations.value[mistakeId] = null;
+
+      } finally {
+        // ローディング状態終了
+        explanationLoading.value[mistakeId] = false;
+      }
+    };
+    
+    // 解説データをテンプレートで参照するメソッド
+    const getExplanation = (mistake) => {
+      const mistakeId = mistake.questionId;
+      
+      // まだ取得していない場合は非同期で取得実行
+      if (explanations.value[mistakeId] === undefined) {
+        fetchExplanation(mistake);
+        return null;  // 取得中は空を返す
+      }
+      
+      return explanations.value[mistakeId];
+    };
     
     return {
       selectedSubject,
       availableSubjects,
+      isExplanationLoading,
       totalMistakes,
       mistakesBySubject,
       frequentMistakesBySubject,
@@ -313,7 +562,12 @@ export default {
       confirmClearMistake,
       clearMistake,
       clearAllMistakes,
-      goToHome
+      goToHome,
+      retryQuestion,
+      retryAllMistakes,
+      hasFrequentMistakes,
+      getExplanation,
+      explanations
     };
   }
 };
@@ -466,6 +720,54 @@ export default {
       margin-left: auto;
       color: #2ecc71;
       font-weight: bold;
+    }
+  }
+}
+
+.mistake-explanation {
+  margin-top: 0.5rem;
+  
+  .correct-answer-section {
+    padding: 1rem;
+    background-color: #e8f6f3;
+    border-left: 4px solid #2ecc71;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    
+    .correct-answer-title {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: #2ecc71;
+      font-weight: bold;
+    }
+    
+    .correct-answer-text {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.5;
+      font-weight: 500;
+    }
+  }
+  
+  .explanation-section {
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-left: 4px solid #3498db;
+    border-radius: 4px;
+    
+    .explanation-title {
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: #3498db;
+      font-weight: bold;
+    }
+    
+    .explanation-text {
+      margin: 0;
+      font-size: 0.95rem;
+      line-height: 1.5;
     }
   }
 }

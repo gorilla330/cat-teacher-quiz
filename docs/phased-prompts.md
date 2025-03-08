@@ -163,39 +163,622 @@ QuizView.vue の機能を拡張実装:
 
 ## フェーズ5: 間違えた問題管理
 
-「猫先生のクイズチャレンジ」アプリの間違えた問題管理機能を実装しましょう。
+# フェーズ5: 間違えた問題管理 - Part 1 (Vuexモジュール)
 
-### 間違えた問題管理の実装
+「猫先生のクイズチャレンジ」アプリの間違えた問題管理機能を実装します。まずはVuexストアモジュールから始めましょう。
 
-Vuexストアに間違えた問題管理モジュール（store/modules/mistakes.js）を実装:
+## Vuexストアモジュール実装
 
-- 間違えた問題の記録
-- 教科・単元ごとの管理
-- 間違えた回数のカウント
-- クリア機能
+`store/modules/mistakes.js` ファイルを作成し、間違えた問題を管理するためのVuexモジュールを実装してください。
 
-間違えた問題一覧画面（MistakesView.vue）を実装:
+### 要件：
 
-- 教科・単元ごとにグループ化
-- 間違えた回数に応じたソート
-- 各問題の詳細表示
-- 「クリア」と「すべてクリア」ボタン
+1. **間違えた問題の管理**:
+   - 間違えた問題の記録と更新
+   - 教科（理科・社会）ごとの管理
+   - 単元ごとの管理
+   - 間違えた回数のカウント（同じ問題を何回間違えたか）
 
-ローカルストレージを使ったデータ永続化を実装:
+2. **クリア機能**:
+   - 日曜日の18時にクリア可能となる仕組み
+   - 次の日曜18時までクリアできないロック機能
+   - 残り時間の計算機能
 
-- ユーザーデータの保存
-- クイズ結果の保存
-- 間違えた問題の保存
-- アプリ起動時のデータロード
+3. **よく間違える問題の識別**:
+   - 2回以上間違えた問題を「よく間違える問題」として識別
+   - 「よく間違える問題」の科目ごとのカウント機能
 
-シンプルな結果表示画面（ResultView.vue）を改善:
+4. **データ永続化**:
+   - ローカルストレージへの保存機能
+   - アプリ起動時のデータ読み込み機能
 
-- 正答数と問題数の表示
-- 正答率の計算と表示
-- 「もう一度チャレンジ」ボタン
-- 「ホームに戻る」ボタン
+### コード構造：
 
-すべての実装は教科・単元ごとに独立して管理できるようにし、将来的な拡張性を考慮してください。
+```javascript
+// store/modules/mistakes.js
+const state = {
+  // 間違えた問題のリスト
+  mistakesList: [],
+  // 最終更新日時
+  lastUpdated: null
+};
+
+// 次の日曜18時の日時を計算する関数
+const getNextSundayAt18 = () => {
+  // ここに実装...
+};
+
+const mutations = {
+  // 間違えた問題を追加・更新
+  addMistake(state, { questionId, subject, topic, question, options, correctAnswer }) {
+    // ここに実装...
+  },
+  
+  // 間違えた問題をクリア（削除）
+  clearMistake(state, questionId) {
+    // ここに実装...
+  },
+  
+  // すべての間違えた問題をクリア（クリア可能なもののみ）
+  clearAllMistakes(state) {
+    // ここに実装...
+  },
+  
+  // 間違えた問題が正解された場合の処理
+  markCorrect(state, questionId) {
+    // ここに実装...
+  },
+  
+  // クリア可能かどうかの状態を更新
+  updateClearableStatus(state) {
+    // ここに実装...
+  },
+  
+  // ストアの状態をローカルストレージから復元
+  setState(state, { mistakesList, lastUpdated }) {
+    // ここに実装...
+  }
+};
+
+const actions = {
+  // 間違えた問題を記録
+  recordMistake({ commit, dispatch }, payload) {
+    // ここに実装...
+  },
+  
+  // 間違えた問題をクリア
+  clearMistake({ commit, dispatch }, questionId) {
+    // ここに実装...
+  },
+  
+  // すべての間違えた問題をクリア
+  clearAllMistakes({ commit, dispatch }) {
+    // ここに実装...
+  },
+  
+  // 間違えた問題が正解された場合の処理
+  markCorrect({ commit, dispatch }, questionId) {
+    // ここに実装...
+  },
+  
+  // ローカルストレージからデータを読み込む
+  loadFromLocalStorage({ commit }) {
+    // ここに実装...
+  },
+  
+  // ローカルストレージにデータを保存
+  saveToLocalStorage({ state }) {
+    // ここに実装...
+  }
+};
+
+const getters = {
+  // 間違えた問題の総数を取得
+  totalMistakes: (state) => {
+    // ここに実装...
+  },
+  
+  // 科目ごとの間違えた問題数を取得
+  mistakesBySubject: (state) => {
+    // ここに実装...
+  },
+  
+  // よく間違える問題（2回以上間違えた問題）の数を科目ごとに取得
+  frequentMistakesBySubject: (state) => {
+    // ここに実装...
+  },
+  
+  // 科目ごとの間違えた問題リストを取得
+  mistakesListBySubject: (state) => {
+    // ここに実装...
+  },
+  
+  // 科目とトピックごとの間違えた問題リストを取得
+  mistakesListBySubjectAndTopic: (state) => {
+    // ここに実装...
+  },
+  
+  // よく間違える問題（2回以上間違えた問題）のリストを取得
+  frequentMistakesList: (state) => {
+    // ここに実装...
+  },
+  
+  // クリア不可メッセージの取得（次の日曜18時対応版）
+  getLockedMessage: (state) => (mistake) => {
+    // ここに実装...
+  }
+};
+
+export default {
+  namespaced: true,
+  state,
+  mutations,
+  actions,
+  getters
+};
+```
+
+上記の構造を参考に、Vuexストアモジュールを完成させてください。特に、次の日曜18時にクリア可能となる機能と、よく間違える問題の識別機能を重点的に実装してください。
+
+# フェーズ5: 間違えた問題管理 - Part 2 (間違えた問題一覧画面)
+
+Part 1で作成したVuexモジュールを活用して、間違えた問題一覧画面（MistakesView.vue）を実装しましょう。
+
+## 間違えた問題一覧画面の実装
+
+`views/MistakesView.vue` ファイルを作成し、間違えた問題を表示するための画面を実装してください。
+
+### 要件：
+
+1. **科目タブの表示**:
+   - 理科と社会のタブを表示
+   - 各タブに間違えた問題の数を表示
+   - よく間違える問題（2回以上間違えた問題）がある場合に特別なマーカーを表示
+
+2. **問題リストの表示**:
+   - 間違えた回数順でソート（多い順）
+   - 問題の詳細（質問、選択肢、正解）を表示
+   - よく間違える問題を視覚的に強調
+
+3. **クリア機能**:
+   - 個別問題のクリアボタン（クリア可能な場合のみ表示）
+   - 「すべてクリア」ボタン（クリア可能な問題がある場合のみ有効）
+   - クリア確認モーダル
+
+4. **ロック表示**:
+   - クリア不可の問題には次の日曜18時までの残り時間を表示
+   - 「次の日曜18時にクリア可能になります」などのメッセージ表示
+
+### コンポーネント構造：
+
+```vue
+<template>
+  <div class="mistakes-view">
+    <!-- ヘッダー -->
+    <div class="mistakes-header">
+      <GrTitle tag="h1" size="lg" color="primary">間違えた問題</GrTitle>
+    </div>
+
+    <!-- 間違えた問題がない場合 -->
+    <template v-if="問題がない条件">
+      <div class="empty-state">
+        <!-- 空の状態表示 -->
+      </div>
+    </template>
+
+    <!-- 間違えた問題がある場合 -->
+    <template v-else>
+      <!-- 科目タブ -->
+      <div class="subject-tabs">
+        <!-- 理科と社会のタブを表示 -->
+      </div>
+      
+      <!-- 問題リスト -->
+      <div class="mistakes-content" v-if="選択された科目がある条件">
+        <!-- すべてクリアボタン -->
+        <div class="mistake-actions">
+          <!-- クリアボタン -->
+        </div>
+        
+        <!-- 問題カード -->
+        <div class="mistake-cards">
+          <!-- 各問題のカード -->
+        </div>
+      </div>
+      
+      <!-- 戻るボタン -->
+      <div class="back-button">
+        <!-- ホームに戻るボタン -->
+      </div>
+    </template>
+    
+    <!-- クリア確認モーダル -->
+    <div v-if="モーダル表示条件" class="confirm-modal">
+      <!-- モーダル内容 -->
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  name: 'MistakesView',
+  components: {
+    // 必要なコンポーネント
+  },
+  setup() {
+    // リアクティブな状態
+    // Vuexストアの利用
+    // 関数の実装
+    
+    return {
+      // 返す値
+    };
+  }
+};
+</script>
+
+<style scoped lang="scss">
+/* スタイル定義 */
+</style>
+```
+
+上記の構造を参考に、間違えた問題一覧画面を完成させてください。特に、科目タブの表示、よく間違える問題の強調表示、次の日曜18時までのロック表示に重点を置いてください。また、ユーザーインターフェースは直感的で使いやすく設計してください。
+
+# フェーズ5: 間違えた問題管理 - Part 3 (ホーム画面と結果画面の更新)
+
+間違えた問題管理機能を完成させるため、ホーム画面と結果画面を更新しましょう。
+
+## 1. ホーム画面の更新 (HomeView.vue)
+
+既存のホーム画面に間違えた問題の情報を追加してください。
+
+### 要件：
+
+1. **間違えた問題の表示**:
+   - 「間違えた問題」ボタンの下に理科と社会の間違え数を表示
+   - 各科目に対して間違えた問題の数を表示
+   - よく間違える問題（2回以上間違えた問題）がある場合に特別なマーカーを表示
+
+2. **インタラクション**:
+   - 「間違えた問題」ボタンをクリックすると間違えた問題一覧画面に遷移
+   - アプリ起動時に間違えた問題データをロード
+
+### 更新箇所：
+
+```vue
+<template>
+  <!-- 既存のホーム画面のテンプレート -->
+  
+  <!-- 間違えた問題ボタンの部分を修正 -->
+  <div class="mistakes-button-container">
+    <GrButton variant="secondary" size="lg" @click="goToMistakes">
+      間違えた問題
+    </GrButton>
+    
+    <!-- 間違えた問題の数を表示 -->
+    <div class="mistake-badges" v-if="hasMistakes">
+      <!-- 理科と社会の間違え数を表示 -->
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  // 既存の設定
+  
+  setup() {
+    // 既存のコード
+    
+    // 間違えた問題の取得
+    const mistakesBySubject = computed(() => store.getters['mistakes/mistakesBySubject']);
+    const frequentMistakesBySubject = computed(() => store.getters['mistakes/frequentMistakesBySubject']);
+    
+    // 間違えた問題があるかどうか
+    const hasMistakes = computed(() => {
+      // 実装...
+    });
+    
+    // コンポーネントマウント時の処理
+    onMounted(() => {
+      // 間違えた問題データをロード
+    });
+    
+    // 間違えた問題画面へ遷移
+    const goToMistakes = () => {
+      // 実装...
+    };
+    
+    return {
+      // 既存の返り値
+      // 追加する返り値
+    };
+  }
+};
+</script>
+
+<style scoped lang="scss">
+/* 既存のスタイル */
+
+/* 間違えた問題バッジのスタイル */
+.mistakes-button-container {
+  /* スタイルを実装 */
+}
+</style>
+```
+
+## 2. 結果画面の更新 (ResultView.vue)
+
+クイズ結果画面を更新して、間違えた問題の記録と表示機能を追加してください。
+
+### 要件：
+
+1. **結果表示の拡張**:
+   - 正答数と総問題数の表示（既存）
+   - 正答率の計算と表示
+   - 間違えた問題の数を表示
+
+2. **間違えた問題の記録**:
+   - 間違えた問題をVuexストアに記録
+   - 間違えた問題がある場合に通知を表示
+   - よく間違える問題（2回以上間違えた問題）がある場合に特別な通知を表示
+
+3. **フィードバック**:
+   - 結果に応じたキャラクターのフィードバック
+   - 正答率に応じたメッセージの表示
+
+### 更新箇所：
+
+```vue
+<template>
+  <!-- 既存の結果画面のテンプレート -->
+  
+  <!-- 正答率の表示部分を追加 -->
+  <div class="score-display">
+    <!-- 正答数と総問題数の表示（既存） -->
+    <p class="percentage">正答率: {{ percentageCorrect }}%</p>
+    
+    <!-- 間違えた問題の通知 -->
+    <div v-if="incorrectIds.length > 0" class="mistake-info">
+      <!-- 通知内容 -->
+    </div>
+  </div>
+  
+  <!-- キャラクターフィードバック -->
+  <div class="character-feedback">
+    <!-- キャラクター画像とフィードバックメッセージ -->
+  </div>
+</template>
+
+<script>
+export default {
+  // 既存の設定
+  
+  setup() {
+    // 既存のコード
+    
+    // 間違えた問題のID
+    const incorrectIds = ref([]);
+    // 科目と単元のコード
+    const subjectCode = ref('');
+    const topicCode = ref('');
+    // よく間違える問題があるかどうか
+    const hasFrequentMistakes = ref(false);
+    
+    // 正答率の計算
+    const percentageCorrect = computed(() => {
+      // 実装...
+    });
+    
+    // コンポーネントマウント時の処理
+    onMounted(async () => {
+      // 結果データの取得
+      // 間違えた問題の記録
+    });
+    
+    // 間違えた問題の記録
+    const recordMistakes = async () => {
+      // 実装...
+    };
+    
+    // フィードバック画像とメッセージの取得
+    const getFeedbackImage = () => {
+      // 実装...
+    };
+    
+    const getFeedbackMessage = () => {
+      // 実装...
+    };
+    
+    return {
+      // 既存の返り値
+      // 追加する返り値
+    };
+  }
+};
+</script>
+
+<style scoped lang="scss">
+/* 既存のスタイル */
+
+/* 追加するスタイル */
+</style>
+```
+
+ホーム画面と結果画面を更新して、間違えた問題管理機能を完成させてください。特に、間違えた問題の数の表示、よく間違える問題の強調表示、正答率に応じたフィードバックに重点を置いてください。デザインは猫先生のキャラクターに合った親しみやすいものにしてください。
+
+# フェーズ5: 間違えた問題管理 - Part 4 (統合と動作確認)
+
+間違えた問題管理機能の各コンポーネントを統合し、動作確認を行いましょう。
+
+## 1. ルーティングの設定
+
+間違えた問題一覧画面へのルートを追加してください。
+
+### router/index.js の更新:
+
+```javascript
+import { createRouter, createWebHistory } from 'vue-router';
+// 他のインポート
+
+// 間違えた問題一覧画面をインポート
+import MistakesView from '../views/MistakesView.vue';
+
+const routes = [
+  // 既存のルート
+  
+  // 間違えた問題一覧画面のルート
+  {
+    path: '/mistakes',
+    name: 'mistakes',
+    component: MistakesView
+  }
+];
+
+const router = createRouter({
+  history: createWebHistory(process.env.BASE_URL),
+  routes
+});
+
+export default router;
+```
+
+## 2. Vuexストアへのモジュール登録
+
+作成した間違えた問題管理モジュールをVuexストアに登録してください。
+
+### store/index.js の更新:
+
+```javascript
+import { createStore } from 'vuex';
+// 他のインポート
+
+// 間違えた問題管理モジュールをインポート
+import mistakes from './modules/mistakes';
+
+export default createStore({
+  state: {
+    // 既存のステート
+  },
+  mutations: {
+    // 既存のミューテーション
+  },
+  actions: {
+    // 既存のアクション
+  },
+  modules: {
+    // 既存のモジュール
+    mistakes // 間違えた問題管理モジュールを追加
+  }
+});
+```
+
+## 3. QuizView.vue の更新
+
+クイズが終了したときに間違えた問題の情報を記録するように、QuizView.vue を更新してください。
+
+### 更新箇所:
+
+```javascript
+// QuizView.vue の finishQuiz 関数を更新
+
+const finishQuiz = () => {
+  // 間違えた問題のIDを収集
+  const incorrectIds = userAnswers.value
+    .filter(answer => !answer.correct)
+    .map((_, index) => questions.value[index].id);
+  
+  // 結果をローカルストレージに保存
+  const results = {
+    correctCount: correctAnswers.value,
+    totalQuestions: questions.value.length,
+    incorrectIds,
+    subject: currentSubject.value,
+    topic: currentTopic.value
+  };
+  localStorage.setItem('quizResults', JSON.stringify(results));
+  
+  // 結果画面へ遷移
+  router.push({ name: 'result' });
+};
+```
+
+## 4. App.vue での初期化
+
+アプリ起動時に間違えた問題のデータをローカルストレージから読み込むように、App.vue を更新してください。
+
+### App.vue の更新:
+
+```vue
+<script>
+import { onMounted } from 'vue';
+import { useStore } from 'vuex';
+
+export default {
+  // 既存の設定
+  
+  setup() {
+    const store = useStore();
+    
+    onMounted(() => {
+      // 間違えた問題データをローカルストレージから読み込む
+      store.dispatch('mistakes/loadFromLocalStorage');
+      
+      // クリア可能状態を更新
+      store.commit('mistakes/updateClearableStatus');
+    });
+    
+    return {
+      // 返す値
+    };
+  }
+};
+</script>
+```
+
+## 5. 動作確認
+
+実装した間違えた問題管理機能の動作確認を行ってください。以下のシナリオをテストしてください:
+
+1. **基本機能のテスト**:
+   - クイズで問題を間違える
+   - 結果画面で間違えた問題の通知を確認
+   - ホーム画面で間違えた問題数の表示を確認
+   - 間違えた問題一覧画面で問題の詳細を確認
+
+2. **よく間違える問題のテスト**:
+   - 同じ問題を2回間違える
+   - よく間違える問題としてマークされることを確認
+   - ホーム画面と間違えた問題一覧画面での特別表示を確認
+
+3. **クリア機能のテスト**:
+   - 次の日曜18時までクリアできないことを確認
+   - 日曜18時以降にクリア可能になることを確認（テスト用に日時を調整）
+   - 「すべてクリア」ボタンの動作を確認
+
+## 6. エラーハンドリングと最適化
+
+実装した機能のエラーハンドリングと最適化を行ってください:
+
+1. **エラーハンドリング**:
+   - データ読み込み失敗時の対応
+   - 問題データが見つからない場合の対応
+   - クリア操作失敗時の対応
+
+2. **パフォーマンス最適化**:
+   - 不要な再レンダリングの防止
+   - キャッシュの活用
+   - 大量のデータに対する効率的な処理
+
+## まとめ
+
+フェーズ5の「間違えた問題管理」機能を完成させました。この機能により、ユーザーは自分が間違えた問題を効果的に復習でき、学習効率が向上します。特に以下の点が重要です:
+
+- 科目（理科・社会）を横断した間違えた問題の管理
+- 次の日曜18時までクリアできないロック機能による定期的な復習の促進
+- よく間違える問題の特別表示による重点学習の支援
+
+これらの機能が正しく動作することを確認し、必要に応じて調整してください。
+
 
 ### 将来的な実装検討事項: ランクシステム
 
