@@ -25,7 +25,9 @@ class DataManager {
     }
     
     try {
-      const response = await fetch('/data/subjects.json');
+      // ベースURLを考慮したパスを生成
+      const baseUrl = process.env.NODE_ENV === 'production' ? '/cat-teacher-quiz' : '';
+      const response = await fetch(`${baseUrl}/data/subjects.json`);
       if (!response.ok) {
         throw new Error(`インデックスデータの読み込みに失敗しました: ${response.status}`);
       }
@@ -107,7 +109,9 @@ class DataManager {
     }
     
     try {
-      const response = await fetch(`/data/${fileName}`);
+      // ベースURLを考慮したパスを生成
+      const baseUrl = process.env.NODE_ENV === 'production' ? '/cat-teacher-quiz' : '';
+      const response = await fetch(`${baseUrl}/data/${fileName}`);
       if (!response.ok) {
         throw new Error(`問題ファイル「${fileName}」の読み込みに失敗しました: ${response.status}`);
       }
