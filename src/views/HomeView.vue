@@ -4,7 +4,7 @@
       <GrTitle tag="h1" size="xl" color="accent2" class="app-title">猫先生のクイズチャレンジ</GrTitle>
       <div class="cat-image-container">
         <!-- 猫先生の画像（絶対パスで指定） -->
-        <img :src="`${assetBaseUrl}assets/characters/neko_sensei/top_neko.png`" alt="猫先生" class="cat-image" />
+        <img :src="topNekoImagePath" alt="猫先生" class="cat-image" />
       </div>
     </div>
     
@@ -93,6 +93,19 @@ export default {
     const loading = computed(() => store.getters.isLoading);
     const error = computed(() => store.getters.getError);
     
+    // 猫先生の画像パスを環境に応じて生成
+    const topNekoImagePath = computed(() => {
+      // 本番環境ではベースURLが「/cat-teacher-quiz/」、開発環境では「/」
+      const isProd = process.env.NODE_ENV === 'production';
+      const basePathForAssets = isProd ? '/cat-teacher-quiz/assets/' : '/assets/';
+      
+      // デバッグ用にパス情報を出力
+      console.log(`トップ画像パス生成 - 環境: ${isProd ? '本番' : '開発'}, ベースパス: ${basePathForAssets}`);
+      
+      // 絶対パスで指定
+      return `${basePathForAssets}characters/neko_sensei/top_neko.png`;
+    });
+    
     // 間違えた問題の情報
     const mistakesBySubject = computed(() => store.getters['mistakes/mistakesBySubject']);
     const frequentMistakesBySubject = computed(() => store.getters['mistakes/frequentMistakesBySubject']);
@@ -156,7 +169,8 @@ export default {
       hasMistakes,
       subjectsWithMistakes,
       navigateToSubjects,
-      navigateToMistakes
+      navigateToMistakes,
+      topNekoImagePath
     };
   }
 };
