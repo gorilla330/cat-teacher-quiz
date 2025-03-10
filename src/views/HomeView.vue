@@ -3,8 +3,8 @@
     <div class="hero-section">
       <GrTitle tag="h1" size="xl" color="accent2" class="app-title">猫先生のクイズチャレンジ</GrTitle>
       <div class="cat-image-container">
-        <!-- 猫先生の画像（相対パスで指定） -->
-        <img src="assets/characters/neko_sensei/top_neko.png" alt="猫先生" class="cat-image" />
+        <!-- 猫先生の画像（絶対パスで指定） -->
+        <img :src="`${assetBaseUrl}assets/characters/neko_sensei/top_neko.png`" alt="猫先生" class="cat-image" />
       </div>
     </div>
     
@@ -72,6 +72,7 @@ import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import GrTitle from '@/components/ui/GrTitle.vue';
 import GrButton from '@/components/ui/GrButton.vue';
+import { assetBaseUrl } from '@/config';
 
 export default {
   name: 'HomeView',

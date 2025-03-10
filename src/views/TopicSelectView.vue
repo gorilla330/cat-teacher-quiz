@@ -38,7 +38,7 @@
         <div class="topic-content">
           <div class="topic-header">
             <div class="topic-icon" :style="{ backgroundColor: currentSubject.color }">
-              <img :src="topic.icon" :alt="topic.name" v-if="topic.icon" />
+              <img :src="`${assetBaseUrl}${topic.icon}`" :alt="topic.name" v-if="topic.icon" />
               <span v-else>{{ topic.name.charAt(0) }}</span>
             </div>
             <h3 class="topic-name">{{ topic.name }}</h3>
@@ -83,6 +83,7 @@ import GrCard from '@/components/ui/GrCard.vue';
 import GrButton from '@/components/ui/GrButton.vue';
 import GrBubble from '@/components/ui/GrBubble.vue';
 import GrHighlight from '@/components/ui/GrHighlight.vue';
+import { assetBaseUrl } from '@/config';
 
 export default {
   name: 'TopicSelectView',
@@ -134,7 +135,8 @@ export default {
       loading,
       error,
       navigateToQuiz,
-      navigateToSubjects
+      navigateToSubjects,
+      assetBaseUrl
     };
   }
 };

@@ -26,6 +26,7 @@
 <script>
 import { computed } from 'vue';
 import GrBubble from '@/components/ui/GrBubble.vue';
+import { assetBaseUrl } from '@/config';
 
 export default {
   name: 'CharacterDisplay',
@@ -87,10 +88,8 @@ export default {
 
     // 画像URL
     const imageUrl = computed(() => {
-      // GitHub Pages環境では相対パスで指定する必要がある
-      // 本番環境では 'assets/characters/neko_sensei/neko_sensei_happy.png'
-      // 開発環境では同じく相対パスで指定
-      return `assets/characters/${props.character}/${props.character}_${props.state}.png`;
+      // ルーティングに関係なく正しく表示されるよう、絶対パスを使用
+      return `${assetBaseUrl}assets/characters/${props.character}/${props.character}_${props.state}.png`;
     });
 
     return {
