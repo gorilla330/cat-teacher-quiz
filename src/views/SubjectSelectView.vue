@@ -19,7 +19,7 @@
       >
         <div class="subject-content" :style="{ backgroundColor: subject.color + '33' }">
           <div class="subject-icon" :style="{ backgroundColor: subject.color }">
-            <img :src="subject.icon" :alt="subject.name" v-if="subject.icon" />
+            <img :src="`${assetBaseUrl}${subject.icon}`" :alt="subject.name" v-if="subject.icon" />
             <span v-else>{{ subject.name.charAt(0) }}</span>
           </div>
           <h3 class="subject-name">{{ subject.name }}</h3>
@@ -47,6 +47,7 @@ import { useRouter } from 'vue-router';
 import GrTitle from '@/components/ui/GrTitle.vue';
 import GrCard from '@/components/ui/GrCard.vue';
 import GrButton from '@/components/ui/GrButton.vue';
+import { assetBaseUrl } from '@/config';
 
 export default {
   name: 'SubjectSelectView',
@@ -89,7 +90,8 @@ export default {
       loading,
       error,
       navigateToTopics,
-      navigateToHome
+      navigateToHome,
+      assetBaseUrl
     };
   }
 };

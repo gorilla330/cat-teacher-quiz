@@ -12,6 +12,37 @@ class DataManager {
       topicProblems: {},  // トピック単位の問題キャッシュ（複数ファイルの結合結果）
       questionById: {}    // 問題IDによる検索用キャッシュ
     };
+    
+    // バージョン管理（キャッシュ制御用）
+    this.version = '1.1.0'; // キャッシュを強制的にクリアするために更新
+    this.checkCacheVersion();
+  }
+  
+  /**
+   * キャッシュバージョンをチェックし、必要に応じてクリアします
+   */
+  checkCacheVersion() {
+    const savedVersion = localStorage.getItem('dataManagerVersion');
+    if (savedVersion !== this.version) {
+      // バージョンが異なる場合はキャッシュをクリア
+      console.log(`キャッシュバージョンが異なるためクリアします (${savedVersion} → ${this.version})`);
+      this.clearCache();
+      localStorage.setItem('dataManagerVersion', this.version);
+    }
+  }
+  
+  /**
+   * キャッシュをクリアします
+   */
+  clearCache() {
+    this.cache = {
+      index: null,
+      problemFiles: {},
+      topicProblems: {},
+      questionById: {}
+    };
+    // ローカルストレージのキャッシュもクリア
+    localStorage.removeItem('subjectsData');
   }
 
   /**
@@ -25,9 +56,13 @@ class DataManager {
     }
     
     try {
-      // ベースURLを考慮したパスを生成
+      // ベースURLを考慮したパスを生成（末尾のスラッシュを含まない形式）
       const baseUrl = process.env.NODE_ENV === 'production' ? '/cat-teacher-quiz' : '';
-      const response = await fetch(`${baseUrl}/data/subjects.json`);
+      
+      // キャッシュバスティングのためのタイムスタンプを追加
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${baseUrl}/data/subjects.json?v=${timestamp}`);
+      
       if (!response.ok) {
         throw new Error(`インデックスデータの読み込みに失敗しました: ${response.status}`);
       }
@@ -35,6 +70,9 @@ class DataManager {
       const indexData = await response.json();
       // キャッシュに保存
       this.cache.index = indexData;
+      
+      // ローカルストレージにも保存（デバッグ用）
+      localStorage.setItem('subjectsData', JSON.stringify(indexData));
       
       return indexData;
     } catch (error) {
@@ -111,7 +149,10 @@ class DataManager {
     try {
       // ベースURLを考慮したパスを生成
       const baseUrl = process.env.NODE_ENV === 'production' ? '/cat-teacher-quiz' : '';
-      const response = await fetch(`${baseUrl}/data/${fileName}`);
+      
+      // キャッシュバスティングのためのタイムスタンプを追加
+      const timestamp = new Date().getTime();
+      const response = await fetch(`${baseUrl}/data/${fileName}?v=${timestamp}`);
       if (!response.ok) {
         throw new Error(`問題ファイル「${fileName}」の読み込みに失敗しました: ${response.status}`);
       }
