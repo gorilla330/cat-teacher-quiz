@@ -38,22 +38,37 @@ export default {
     const store = useStore();
     
     onMounted(() => {
-      // キャッシュをクリアして強制的に再読み込み
-      localStorage.removeItem('dataManagerVersion');
-      localStorage.removeItem('subjectsData');
+      // アプリの全キャッシュを完全にクリアする
+      // 1. ローカルストレージの全てのキャッシュを削除
+      const keysToRemove = [
+        'dataManagerVersion',
+        'subjectsData', 
+        'topicProblems',
+        'quizResults',
+        'selectedTopics'
+      ];
       
-      // 間違えた問題データをローカルストレージから読み込む
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`ローカルストレージから削除: ${key}`);
+      });
+      
+      // 2. デバッグ用に現在のLocalStorageの状態をログ出力
+      console.log('キャッシュクリア後のローカルストレージ:', Object.keys(localStorage));
+      
+      // 3. 間違えた問題データは復元
       store.dispatch('mistakes/loadFromLocalStorage');
-      
-      // クリア可能状態を更新
       store.commit('mistakes/updateClearableStatus');
       
-      // 開発用ログ
-      console.log('間違えた問題データを初期化しました');
-      console.log('キャッシュをクリアしました');
-      
-      // 強制的にsubjects.jsonを再読み込み
-      store.dispatch('loadSubjectsData', { forceRefresh: true });
+      // 4. 強制的にデータを再読み込み
+      console.log('キャッシュをクリアしました - 強制再読み込みを開始します');
+      store.dispatch('loadSubjectsData', { forceRefresh: true })
+        .then(() => {
+          console.log('科目データの再読み込みが完了しました');
+        })
+        .catch(error => {
+          console.error('科目データの再読み込み中にエラーが発生しました:', error);
+        });
     });
     
     return {};

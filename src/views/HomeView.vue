@@ -72,7 +72,6 @@ import { useStore } from 'vuex';
 import { useRouter } from 'vue-router';
 import GrTitle from '@/components/ui/GrTitle.vue';
 import GrButton from '@/components/ui/GrButton.vue';
-import { assetBaseUrl } from '@/config';
 
 export default {
   name: 'HomeView',

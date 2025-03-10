@@ -33,16 +33,33 @@ class DataManager {
   
   /**
    * キャッシュをクリアします
+   * @param {boolean} clearAll 全てのキャッシュをクリアするかどうか、デフォルトは全てクリア
    */
-  clearCache() {
-    this.cache = {
-      index: null,
-      problemFiles: {},
-      topicProblems: {},
-      questionById: {}
-    };
-    // ローカルストレージのキャッシュもクリア
-    localStorage.removeItem('subjectsData');
+  clearCache(clearAll = true) {
+    if (clearAll) {
+      // 全てのメモリ内キャッシュをクリア
+      this.cache = {
+        index: null,
+        problemFiles: {},
+        topicProblems: {},
+        questionById: {}
+      };
+      
+      // ローカルストレージの関連キャッシュを全てクリア
+      localStorage.removeItem('subjectsData');
+      localStorage.removeItem('dataManagerVersion');
+      
+      // subjects.jsonの読み込み時にキャッシュバスティングを確実に行うためにtimestampを更新
+      this.timestamp = new Date().getTime();
+      
+      console.log('キャッシュデータを完全にクリアしました');
+    } else {
+      // インデックスは保持し、問題データのみクリア
+      this.cache.problemFiles = {};
+      this.cache.topicProblems = {};
+      this.cache.questionById = {};
+      console.log('問題データのキャッシュをクリアしました');
+    }
   }
 
   /**
@@ -60,8 +77,10 @@ class DataManager {
       const baseUrl = process.env.NODE_ENV === 'production' ? '/cat-teacher-quiz' : '';
       
       // キャッシュバスティングのためのタイムスタンプを追加
-      const timestamp = new Date().getTime();
-      const response = await fetch(`${baseUrl}/data/subjects.json?v=${timestamp}`);
+      if (!this.timestamp) {
+        this.timestamp = new Date().getTime();
+      }
+      const response = await fetch(`${baseUrl}/data/subjects.json?v=${this.timestamp}`);
       
       if (!response.ok) {
         throw new Error(`インデックスデータの読み込みに失敗しました: ${response.status}`);
@@ -294,25 +313,7 @@ class DataManager {
     };
   }
 
-  /**
-   * キャッシュをクリアします
-   * @param {boolean} clearAll 全てのキャッシュをクリアするかどうか
-   */
-  clearCache(clearAll = false) {
-    if (clearAll) {
-      this.cache = {
-        index: null,
-        problemFiles: {},
-        topicProblems: {},
-        questionById: {}
-      };
-    } else {
-      // インデックスは保持し、問題データのみクリア
-      this.cache.problemFiles = {};
-      this.cache.topicProblems = {};
-      this.cache.questionById = {};
-    }
-  }
+  // clearCacheメソッドはファイル上部に統合されました
 }
 
 export default DataManager;

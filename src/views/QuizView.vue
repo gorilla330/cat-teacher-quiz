@@ -183,8 +183,20 @@ export default {
           subjectCode: route.params.subjectCode,
           topicCode: route.params.topicCode
         };
+        
+        // キャッシュ問題を避けるため、旧データを済みチェック
+        console.log('全ローカルストレージキー:', Object.keys(localStorage));
+        
+        // quizResultsとその他のキャッシュをクリア
         localStorage.setItem('quizResults', JSON.stringify(initialQuizResults));
         console.log('クイズ結果を初期化しました:', initialQuizResults);
+        
+        // デバッグ情報: 指定されたパラメータを表示
+        console.log('クイズパラメータ:', { 
+          科目コード: subjectCode, 
+          トピックコード: topicCode, 
+          モード: quizMode.value 
+        });
         
         // 再挑戦モードの場合はキャラクターメッセージを変更
         if (quizMode.value === 'retry') {
@@ -197,20 +209,20 @@ export default {
           }
         }
         
-        // 科目データを読み込む
-        if (!subjects.value.length) {
-          await store.dispatch('loadSubjectsData');
-        }
+        // 科目データを強制的に再読み込み
+        await store.dispatch('loadSubjectsData', { forceRefresh: true });
+        console.log('科目データを強制的に再読み込みしました');
         
-        // 問題データを読み込む
+        // 問題データを読み込む - 強制再読み込みオプションを指定
         await store.dispatch('loadProblems', {
           subjectCode,
-          topicCode
+          topicCode,
+          forceRefresh: true // 強制的に再読み込みする
         });
         
         // ストアから問題データを取得
         const problemsData = store.getters.getProblems;
-        console.log('取得した問題データ:', problemsData);
+        console.log('取得した問題データ:', problemsData.length, '個');
         
         if (!problemsData || problemsData.length === 0) {
           throw new Error('問題データが見つかりませんでした。');

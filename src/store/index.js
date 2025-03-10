@@ -110,38 +110,59 @@ export default createStore({
     },
     
     // 特定の科目とトピックの問題データを読み込む
-    async loadProblems({ commit }, { subjectCode, topicCode }) {
+    async loadProblems({ commit, dispatch }, { subjectCode, topicCode, forceRefresh = false }) {
       commit('SET_LOADING', true);
       commit('SET_ERROR', null);
       
       try {
+        // キャッシュが古い可能性があるため、強制的に科目データを再読み込み
+        if (forceRefresh) {
+          // キャッシュを弾く
+          dataManager.clearCache();
+          await dispatch('loadSubjectsData', { forceRefresh: true });
+          console.log('科目データを強制再読み込みしました');
+        }
+        
         // 科目リストを取得
         const subjects = await dataManager.getSubjects();
+        console.log('利用可能な科目:', subjects.map(s => s.code));
+        
         const subject = subjects.find(s => s.code === subjectCode);
         if (!subject) {
           throw new Error(`指定された科目コード「${subjectCode}」は存在しません。`);
         }
         
+        // 科目の全トピックを詳細表示
+        console.log(`科目 "${subject.name}" のトピック一覧:`, subject.topics.map(t => ({ 
+          code: t.code, 
+          name: t.name,
+          icon: t.icon,
+          dataFiles: t.dataFiles
+        })));
+        
         // トピックリストを取得
         const topics = await dataManager.getTopics(subjectCode);
         const topic = topics.find(t => t.code === topicCode);
+        
         if (!topic) {
           throw new Error(`指定された科目「${subjectCode}」にトピック「${topicCode}」は存在しません。`);
         }
+        
+        console.log(`選択されたトピック: ${topic.name} (${topicCode}), データファイル:`, topic.dataFiles);
         
         commit('SET_CURRENT_SUBJECT', subject);
         commit('SET_CURRENT_TOPIC', topic);
         
         // 問題データを読み込む
         const questions = await dataManager.getProblems(subjectCode, topicCode);
-        console.log('ロードされた問題数:', questions.length);
+        console.log(`トピック "${topic.name}" のロードされた問題数:`, questions.length);
         
         // questions配列を取得してストアにセット
         if (questions && Array.isArray(questions)) {
-          console.log('問題データをセットします:', questions.length, '個');
           // 問題データが空でないことを確認
           if (questions.length > 0) {
             commit('SET_PROBLEMS', questions);
+            console.log(`問題データをセットしました: ${questions.length}個の問題`);
           } else {
             console.error('問題データが空です');
             commit('SET_PROBLEMS', []);
@@ -154,8 +175,8 @@ export default createStore({
         // メタデータを取得してストアにセット
         const metadata = await dataManager.getMetadata(subjectCode, topicCode);
         if (metadata) {
-          console.log('メタデータをセットします:', metadata);
           commit('SET_METADATA', metadata);
+          console.log('メタデータをセットしました:', metadata);
         }
       } catch (error) {
         commit('SET_ERROR', error.message);

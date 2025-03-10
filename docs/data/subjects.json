@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "lastUpdated": "2025-03-08",
+  "version": "1.1.0",
+  "lastUpdated": "2025-03-10",
   "subjects": [
     {
       "code": "social",
@@ -26,49 +26,13 @@
       "color": "#2ECC71",
       "topics": [
         {
-          "code": "seasonal1",
-          "name": "植物の成長と季節",
-          "icon": "assets/characters/logo/seasons_icon.png",
-          "dataFiles": ["science1.json"],
-          "questionCount": 20,
-          "difficulty": "初級",
-          "targetAge": 10
-        },
-        {
-          "code": "seasonal2",
-          "name": "動物の生態と環境",
-          "icon": "assets/characters/logo/seasons_icon.png",
-          "dataFiles": ["science2.json"],
-          "questionCount": 20,
-          "difficulty": "初級〜中級",
-          "targetAge": 10
-        },
-        {
-          "code": "solutions1",
-          "name": "水溶液の性質（基礎）",
-          "icon": "assets/characters/logo/solutions_icon.png",
-          "dataFiles": ["science3.json"],
-          "questionCount": 20,
-          "difficulty": "中級",
-          "targetAge": 10
-        },
-        {
-          "code": "solutions2",
-          "name": "水溶液の実験と応用",
-          "icon": "assets/characters/logo/solutions_icon.png",
-          "dataFiles": ["science4.json"],
-          "questionCount": 20,
+          "code": "ecosystem",
+          "name": "地球の生態系（第6回）",
+          "icon": "assets/characters/logo/ecosystem_icon.png",
+          "dataFiles": ["science5.json"],
+          "questionCount": 30,
           "difficulty": "中級〜上級",
-          "targetAge": 10
-        },
-        {
-          "code": "combustion",
-          "name": "燃焼と消化",
-          "icon": "assets/characters/logo/combustion_icon.png",
-          "dataFiles": ["science4.json"],
-          "questionCount": 20,
-          "difficulty": "初級〜中級",
-          "targetAge": 10
+          "targetAge": 12
         }
       ]
     }
