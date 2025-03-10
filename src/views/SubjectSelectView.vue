@@ -19,7 +19,7 @@
       >
         <div class="subject-content" :style="{ backgroundColor: subject.color + '33' }">
           <div class="subject-icon" :style="{ backgroundColor: subject.color }">
-            <img :src="`${assetBaseUrl}${subject.icon}`" :alt="subject.name" v-if="subject.icon" />
+            <img :src="getSubjectIconPath(subject.icon)" :alt="subject.name" v-if="subject.icon" />
             <span v-else>{{ subject.name.charAt(0) }}</span>
           </div>
           <h3 class="subject-name">{{ subject.name }}</h3>
@@ -84,6 +84,18 @@ export default {
     const navigateToHome = () => {
       router.push({ name: 'home' });
     };
+    
+    // 科目アイコンのパスを環境に応じて生成する関数
+    const getSubjectIconPath = (iconPath) => {
+      // 本番環境ではベースURLが「/cat-teacher-quiz/」、開発環境では「/」
+      const isProd = process.env.NODE_ENV === 'production';
+      const basePathForAssets = isProd ? '/cat-teacher-quiz/' : '/';
+      
+      // デバッグ用にパス情報を出力
+      console.log(`科目アイコンパス生成 - 環境: ${isProd ? '本番' : '開発'}, パス: ${basePathForAssets}${iconPath}`);
+      
+      return `${basePathForAssets}${iconPath}`;
+    };
 
     return {
       subjects,
@@ -91,7 +103,8 @@ export default {
       error,
       navigateToTopics,
       navigateToHome,
-      assetBaseUrl
+      assetBaseUrl,
+      getSubjectIconPath
     };
   }
 };
