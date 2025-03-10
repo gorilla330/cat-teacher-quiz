@@ -26,7 +26,6 @@
 <script>
 import { computed } from 'vue';
 import GrBubble from '@/components/ui/GrBubble.vue';
-import { assetBaseUrl } from '@/config';
 
 export default {
   name: 'CharacterDisplay',
@@ -88,8 +87,16 @@ export default {
 
     // 画像URL
     const imageUrl = computed(() => {
-      // ルーティングに関係なく正しく表示されるよう、絶対パスを使用
-      return `${assetBaseUrl}assets/characters/${props.character}/${props.character}_${props.state}.png`;
+      // GitHub Pages環境で正しく表示されるようにパスを修正
+      // 本番環境ではベースURLが「/cat-teacher-quiz/」、開発環境では「/」
+      const isProd = process.env.NODE_ENV === 'production';
+      const basePathForAssets = isProd ? '/cat-teacher-quiz/assets/' : '/assets/';
+      
+      // デバッグ用にパス情報を出力
+      console.log(`環境: ${isProd ? '本番' : '開発'}, ベースパス: ${basePathForAssets}`);
+      
+      // 絶対パスで指定
+      return `${basePathForAssets}characters/${props.character}/${props.character}_${props.state}.png`;
     });
 
     return {
