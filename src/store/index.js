@@ -86,13 +86,21 @@ export default createStore({
   },
   actions: {
     // 科目データを読み込む
-    async loadSubjectsData({ commit }) {
+    async loadSubjectsData({ commit }, options = {}) {
       commit('SET_LOADING', true);
       commit('SET_ERROR', null);
       
       try {
+        // 強制再読み込みオプションが指定されている場合はキャッシュをクリア
+        if (options.forceRefresh) {
+          // DataManagerのキャッシュをクリア
+          dataManager.clearCache();
+          console.log('データマネージャーのキャッシュをクリアしました');
+        }
+        
         const indexData = await dataManager.loadIndex();
         commit('SET_SUBJECTS', indexData.subjects);
+        console.log('科目データを読み込みました:', indexData.subjects);
       } catch (error) {
         commit('SET_ERROR', error.message);
         console.error('科目データの読み込み中にエラーが発生しました:', error);

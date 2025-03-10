@@ -38,6 +38,10 @@ export default {
     const store = useStore();
     
     onMounted(() => {
+      // キャッシュをクリアして強制的に再読み込み
+      localStorage.removeItem('dataManagerVersion');
+      localStorage.removeItem('subjectsData');
+      
       // 間違えた問題データをローカルストレージから読み込む
       store.dispatch('mistakes/loadFromLocalStorage');
       
@@ -46,6 +50,10 @@ export default {
       
       // 開発用ログ
       console.log('間違えた問題データを初期化しました');
+      console.log('キャッシュをクリアしました');
+      
+      // 強制的にsubjects.jsonを再読み込み
+      store.dispatch('loadSubjectsData', { forceRefresh: true });
     });
     
     return {};
