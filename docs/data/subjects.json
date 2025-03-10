@@ -11,7 +11,7 @@
         {
           "code": "environment",
           "name": "公害と環境問題（第6回）",
-          "icon": "assets/characters/logo/industry_icon.png",
+          "icon": "assets/characters/logo/social_logo.png",
           "dataFiles": ["social5.json"],
           "questionCount": 30,
           "difficulty": "中級",
@@ -28,7 +28,7 @@
         {
           "code": "ecosystem",
           "name": "地球の生態系（第6回）",
-          "icon": "assets/characters/logo/ecosystem_icon.png",
+          "icon": "assets/characters/logo/science_logo.png",
           "dataFiles": ["science5.json"],
           "questionCount": 30,
           "difficulty": "中級〜上級",
