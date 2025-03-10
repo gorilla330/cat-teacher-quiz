@@ -38,7 +38,7 @@
         <div class="topic-content">
           <div class="topic-header">
             <div class="topic-icon" :style="{ backgroundColor: currentSubject.color }">
-              <img :src="`/images/${topic.icon}`" :alt="topic.name" v-if="topic.icon" />
+              <img :src="topic.icon" :alt="topic.name" v-if="topic.icon" />
               <span v-else>{{ topic.name.charAt(0) }}</span>
             </div>
             <h3 class="topic-name">{{ topic.name }}</h3>

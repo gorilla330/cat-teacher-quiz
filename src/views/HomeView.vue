@@ -3,8 +3,8 @@
     <div class="hero-section">
       <GrTitle tag="h1" size="xl" color="accent2" class="app-title">猫先生のクイズチャレンジ</GrTitle>
       <div class="cat-image-container">
-        <!-- 猫先生の画像 -->
-        <img src="/assets/characters/neko_sensei/top_neko.png" alt="猫先生" class="cat-image" />
+        <!-- 猫先生の画像（相対パスで指定） -->
+        <img src="assets/characters/neko_sensei/top_neko.png" alt="猫先生" class="cat-image" />
       </div>
     </div>
     

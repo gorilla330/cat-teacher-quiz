@@ -87,8 +87,10 @@ export default {
 
     // 画像URL
     const imageUrl = computed(() => {
-      // /assets/characters/neko_sensei/neko_sensei_happy.png
-      return `/assets/characters/${props.character}/${props.character}_${props.state}.png`;
+      // GitHub Pages環境では相対パスで指定する必要がある
+      // 本番環境では 'assets/characters/neko_sensei/neko_sensei_happy.png'
+      // 開発環境では同じく相対パスで指定
+      return `assets/characters/${props.character}/${props.character}_${props.state}.png`;
     });
 
     return {
