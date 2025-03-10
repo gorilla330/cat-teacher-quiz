@@ -9,40 +9,13 @@
       "color": "#4B89DC",
       "topics": [
         {
-          "code": "industry1",
-          "name": "水産業と資源（基礎）",
+          "code": "environment",
+          "name": "公害と環境問題（第6回）",
           "icon": "/assets/characters/logo/industry_icon.png",
-          "dataFiles": ["social1.json"],
-          "questionCount": 20,
-          "difficulty": "初級",
-          "targetAge": 10
-        },
-        {
-          "code": "industry2",
-          "name": "水産業と資源（発展）",
-          "icon": "/assets/characters/logo/industry_icon.png",
-          "dataFiles": ["social2.json"],
-          "questionCount": 20,
-          "difficulty": "初級〜中級",
-          "targetAge": 10
-        },
-        {
-          "code": "industry3",
-          "name": "工業と経済（基礎）",
-          "icon": "/assets/characters/logo/industry_icon.png",
-          "dataFiles": ["social3.json"],
-          "questionCount": 20,
+          "dataFiles": ["social5.json"],
+          "questionCount": 30,
           "difficulty": "中級",
-          "targetAge": 10
-        },
-        {
-          "code": "industry4",
-          "name": "工業と経済（発展）",
-          "icon": "/assets/characters/logo/industry_icon.png",
-          "dataFiles": ["social4.json"],
-          "questionCount": 20,
-          "difficulty": "中級〜上級",
-          "targetAge": 10
+          "targetAge": 12
         }
       ]
     },
