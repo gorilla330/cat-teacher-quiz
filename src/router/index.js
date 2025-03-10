@@ -75,7 +75,8 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(process.env.BASE_URL),
+  // GitHub Pages環境では '/cat-teacher-quiz/' をベースパスとして使用
+  history: createWebHistory(process.env.NODE_ENV === 'production' ? '/cat-teacher-quiz/' : '/'),
   routes
 });
 
