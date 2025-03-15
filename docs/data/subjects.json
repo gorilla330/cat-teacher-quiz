@@ -1,6 +1,6 @@
 {
-  "version": "1.1.0",
-  "lastUpdated": "2025-03-10",
+  "version": "1.2.0",
+  "lastUpdated": "2025-03-15",
   "subjects": [
     {
       "code": "social",
@@ -16,6 +16,15 @@
           "questionCount": 30,
           "difficulty": "中級",
           "targetAge": 12
+        },
+        {
+          "code": "transportation",
+          "name": "交通・通信・情報化（第7回）",
+          "icon": "assets/characters/logo/social_logo.png",
+          "dataFiles": ["social6.json"],
+          "questionCount": 30,
+          "difficulty": "中級",
+          "targetAge": 14
         }
       ]
     },
@@ -33,6 +42,15 @@
           "questionCount": 30,
           "difficulty": "中級〜上級",
           "targetAge": 12
+        },
+        {
+          "code": "weather",
+          "name": "天気の変化（第7回）",
+          "icon": "assets/characters/logo/science_logo.png",
+          "dataFiles": ["science6.json"],
+          "questionCount": 30,
+          "difficulty": "中級〜上級",
+          "targetAge": 13
         }
       ]
     }
