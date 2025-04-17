@@ -25,6 +25,15 @@
           "questionCount": 30,
           "difficulty": "中級",
           "targetAge": 14
+        },
+        {
+          "code": "japan_appearance",
+          "name": "日本のすがた（第9回）",
+          "icon": "assets/characters/logo/social_logo.png",
+          "dataFiles": ["social9.json"],
+          "questionCount": 30,
+          "difficulty": "中級",
+          "targetAge": 14
         }
       ]
     },
