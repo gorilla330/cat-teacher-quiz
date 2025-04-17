@@ -9,24 +9,6 @@
       "color": "#4B89DC",
       "topics": [
         {
-          "code": "environment",
-          "name": "公害と環境問題（第6回）",
-          "icon": "assets/characters/logo/social_logo.png",
-          "dataFiles": ["social5.json"],
-          "questionCount": 30,
-          "difficulty": "中級",
-          "targetAge": 12
-        },
-        {
-          "code": "transportation",
-          "name": "交通・通信・情報化（第7回）",
-          "icon": "assets/characters/logo/social_logo.png",
-          "dataFiles": ["social6.json"],
-          "questionCount": 30,
-          "difficulty": "中級",
-          "targetAge": 14
-        },
-        {
           "code": "japan_appearance",
           "name": "日本のすがた（第9回）",
           "icon": "assets/characters/logo/social_logo.png",
