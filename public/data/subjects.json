@@ -24,26 +24,7 @@
       "name": "理科",
       "icon": "assets/characters/logo/science_logo.png",
       "color": "#2ECC71",
-      "topics": [
-        {
-          "code": "ecosystem",
-          "name": "地球の生態系（第6回）",
-          "icon": "assets/characters/logo/science_logo.png",
-          "dataFiles": ["science5.json"],
-          "questionCount": 30,
-          "difficulty": "中級〜上級",
-          "targetAge": 12
-        },
-        {
-          "code": "weather",
-          "name": "天気の変化（第7回）",
-          "icon": "assets/characters/logo/science_logo.png",
-          "dataFiles": ["science6.json"],
-          "questionCount": 30,
-          "difficulty": "中級〜上級",
-          "targetAge": 13
-        }
-      ]
+      "topics": []
     }
   ]
 }
