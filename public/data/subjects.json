@@ -24,7 +24,17 @@
       "name": "理科",
       "icon": "assets/characters/logo/science_logo.png",
       "color": "#2ECC71",
-      "topics": []
+      "topics": [
+        {
+          "code": "plant_structure",
+          "name": "植物のつくり（第9回）",
+          "icon": "assets/characters/logo/science_logo.png",
+          "dataFiles": ["science9.json"],
+          "questionCount": 30,
+          "difficulty": "中級〜上級",
+          "targetAge": 12
+        }
+      ]
     }
   ]
 }
