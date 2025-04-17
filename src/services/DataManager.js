@@ -14,7 +14,7 @@ class DataManager {
     };
     
     // バージョン管理（キャッシュ制御用）
-    this.version = '1.1.0'; // キャッシュを強制的にクリアするために更新
+    this.version = '1.2.0'; // キャッシュを強制的にクリアするために更新
     this.checkCacheVersion();
   }
   
